@@ -1,6 +1,6 @@
 # RavenStack SaaS: MRR Waterfall, Cohort Retention & Churn Risk Analytics link
 
-## [SaaS Subscription & Churn Analytics Dataset]('https://github.com/Mohammed-Elkhamlichi/ravenstack-saas-churn-analytics')
+## [SaaS Subscription & Churn Analytics Dataset]('https://www.kaggle.com/datasets/rivalytics/saas-subscription-and-churn-analytics-dataset/data?select=ravenstack_subscriptions.csv')
 
 > **Project Objective:** Diagnose Net Revenue Retention (NRR) leakage, analyze subscription lifecycle movements (New, Expansion, Contraction, Churn), and build an early-warning risk scorecard using PostgreSQL and Power BI.
 
