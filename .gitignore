@@ -1,0 +1,10 @@
+# Raw Kaggle datasets (keep folder structure, ignore large CSVs)
+data/raw/*.csv
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Power BI temp/backup files (keep the main .pbix file tracked)
+*.pbix.bak
