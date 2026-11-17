@@ -1,5 +1,5 @@
 # Raw Kaggle datasets (keep folder structure, ignore large CSVs)
-data/raw/*.csv
+# data/raw/*.csv
 
 # OS & Editor files
 .DS_Store
