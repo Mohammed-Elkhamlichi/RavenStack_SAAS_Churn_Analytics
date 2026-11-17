@@ -228,7 +228,7 @@ SELECT
     account_name,
     industry,
     country,
-    signup_date::DATE,
+    TO_DATE(signup_date, 'YYYY-MM-DD')::DATE,
     referral_source,
     plan_tier,
     seats::INT,
@@ -258,8 +258,8 @@ INSERT INTO
 SELECT
     subscription_id,
     account_id,
-    start_date::DATE,
-    NULLIF(end_date, '')::DATE, -- Converts empty strings in CSV to proper SQL NULLs
+    TO_DATE(start_date, 'YYYY-MM-DD')::DATE,
+    TO_DATE(NULLIF(end_date, ''), 'YYYY-MM-DD')::DATE, -- Converts empty strings in CSV to proper SQL NULLs
     plan_tier,
     seats::INT,
     mrr_amount::NUMERIC(10, 2),
@@ -288,7 +288,7 @@ INSERT INTO
 SELECT
     usage_id,
     subscription_id,
-    usage_date::DATE,
+    TO_DATE(usage_date, 'YYYY-MM-DD')::DATE,
     feature_name,
     usage_count::INT,
     usage_duration_secs::INT,
