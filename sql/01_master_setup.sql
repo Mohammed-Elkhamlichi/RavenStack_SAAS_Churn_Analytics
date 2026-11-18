@@ -324,5 +324,5 @@ FROM
     staging.support_tickets;
 
 -- =========================================================================
--- SETUP COMPLETE! Your star schema is now ready for analytical queries & MRR calculations.
+-- SETUP COMPLETE! The star schema is now ready for analytical queries & MRR calculations.
 -- =========================================================================
