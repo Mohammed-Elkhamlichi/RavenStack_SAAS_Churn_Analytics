@@ -1,6 +1,6 @@
--- ==============================================
+-- *************************************
 -- analytics.dim_accounts TABLE
--- ==============================================
+-- *************************************
 -- all industries:
 -- "Cybersecurity" - "EdTech" - "DevTools" - "HealthTech" - "FinTech"
 SELECT DISTINCT
@@ -22,9 +22,9 @@ SELECT DISTINCT
 FROM
     analytics.dim_accounts;
 
--- ==============================================
+-- *************************************
 -- analytics.fact_subscriptions TABLE
--- ==============================================
+-- *************************************
 -- All Subscription Plans: 
 -- "Basic" - "Enterprise" - "Pro"
 SELECT DISTINCT
@@ -39,18 +39,18 @@ SELECT DISTINCT
 FROM
     analytics.fact_subscriptions;
 
--- ==============================================
+-- *************************************
 -- analytics.fact_feature_usage TABLE
--- ==============================================
+-- *************************************
 -- Explore Feature Names:
 SELECT DISTINCT
     feature_name
 FROM
     analytics.fact_feature_usage;
 
--- ==============================================
+-- *************************************
 -- analytics.fact_support_tickets TABLE
--- ==============================================
+-- *************************************
 -- All Priorities:
 -- "priority" - "medium" - "urgent" - "high" - "low"
 SELECT DISTINCT
