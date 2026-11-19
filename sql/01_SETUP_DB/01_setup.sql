@@ -139,21 +139,7 @@ CREATE TABLE
         churn_flag BOOLEAN NOT NULL
     );
 
--- 4.2 Dimension: Date Calendar Spine
-DROP TABLE IF EXISTS analytics.dim_date CASCADE;
-
-CREATE TABLE
-    analytics.dim_date (
-        date_key DATE PRIMARY KEY,
-        YEAR INT NOT NULL,
-        quarter INT NOT NULL,
-        MONTH INT NOT NULL,
-        month_name VARCHAR(20) NOT NULL,
-        day_of_week VARCHAR(20) NOT NULL,
-        is_weekend BOOLEAN NOT NULL
-    );
-
--- 4.3 Fact: Subscriptions (Revenue & Plan Changes)
+-- 4.2 Fact: Subscriptions (Revenue & Plan Changes)
 DROP TABLE IF EXISTS analytics.fact_subscriptions CASCADE;
 
 CREATE TABLE
@@ -174,7 +160,7 @@ CREATE TABLE
         auto_renew_flag BOOLEAN NOT NULL
     );
 
--- 4.4 Fact: Feature Usage (Product Telemetry)
+-- 4.3 Fact: Feature Usage (Product Telemetry)
 DROP TABLE IF EXISTS analytics.fact_feature_usage CASCADE;
 
 CREATE TABLE
@@ -189,7 +175,7 @@ CREATE TABLE
         is_beta_feature BOOLEAN NOT NULL
     );
 
--- 4.5 Fact: Support Tickets (Customer Friction)
+-- 4.4 Fact: Support Tickets (Customer Friction)
 DROP TABLE IF EXISTS analytics.fact_support_tickets CASCADE;
 
 CREATE TABLE
@@ -203,6 +189,22 @@ CREATE TABLE
         first_response_time_minutes INT NOT NULL,
         satisfaction_score INT, -- Can be NULL if customer didn't leave CSAT score
         escalation_flag BOOLEAN NOT NULL
+    );
+
+-- 4.5 Dimension: Churn Events
+DROP TABLE IF EXISTS analytics.dim_churn_events CASCADE;
+
+CREATE TABLE
+    analytics.dim_churn_events (
+        churn_event_id VARCHAR(50) PRIMARY KEY,
+        account_id VARCHAR(50) NOT NULL REFERENCES analytics.dim_accounts (account_id),
+        churn_date DATE NOT NULL,
+        reason_code VARCHAR(20),
+        refund_amount_usd NUMERIC(10, 2) NOT NULL,
+        preceding_upgrade_flag BOOLEAN NOT NULL,
+        preceding_downgrade_flag BOOLEAN NOT NULL,
+        is_reactivation BOOLEAN NOT NULL,
+        feedback_text VARCHAR(255)
     );
 
 -- =========================================================================
@@ -322,6 +324,35 @@ SELECT
     escalation_flag::BOOLEAN
 FROM
     staging.support_tickets;
+
+-- 5.5 Load dim_churn_events
+INSERT INTO
+    analytics.dim_churn_events (
+        churn_event_id,
+        account_id,
+        churn_date,
+        reason_code,
+        refund_amount_usd,
+        preceding_upgrade_flag,
+        preceding_downgrade_flag,
+        is_reactivation,
+        feedback_text
+    )
+SELECT
+    churn_event_id,
+    account_id,
+    CASE
+        WHEN churn_date = 'unknown' THEN NULL
+        ELSE TO_DATE(churn_date, 'YYYY-MM-DD')
+    END AS churn_date,
+    LOWER(TRIM(reason_code)),
+    refund_amount_usd::NUMERIC,
+    preceding_upgrade_flag::BOOLEAN,
+    preceding_downgrade_flag::BOOLEAN,
+    is_reactivation::BOOLEAN,
+    LOWER(TRIM(feedback_text))
+FROM
+    staging.churn_events;
 
 -- =========================================================================
 -- SETUP COMPLETE! The star schema is now ready for analytical queries & MRR calculations.
