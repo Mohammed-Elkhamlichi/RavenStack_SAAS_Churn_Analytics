@@ -26,26 +26,30 @@ FROM
 -- Subscriptions Table
 -- *****************************
 -- Total Subscriptions
+--  5000
 SELECT
     COUNT(subscription_id) AS total_subscription
 FROM
     analytics.fact_subscriptions;
 
 -- Total Plans
+-- 3
 SELECT
     COUNT(DISTINCT plan_tier) AS total_plans
 FROM
     analytics.fact_subscriptions;
 
 -- Total Monthly Recurring Revenue MRR
+-- 11338747.00
 SELECT
-    SUM(DISTINCT mrr_amount) AS total_mrr_amount
+    SUM(mrr_amount) AS total_mrr_amount
 FROM
     analytics.fact_subscriptions;
 
--- Total Annule Recurring Revenue MRR
+-- Total Annule Recurring Revenue ARR
+-- 136064964.00
 SELECT
-    SUM(DISTINCT arr_amount) AS total_arr_amount
+    SUM(arr_amount) AS total_arr_amount
 FROM
     analytics.fact_subscriptions;
 
@@ -53,6 +57,7 @@ FROM
 -- Churn Events Table
 -- *****************************
 -- Total Refund Amount USD
+-- 8652.25
 SELECT
     SUM(refund_amount_usd) AS total_refund_usd
 FROM
@@ -62,6 +67,7 @@ FROM
 -- Feature Usage Table
 -- *****************************
 -- Total features
+-- 40 Unique Features
 SELECT
     COUNT(DISTINCT feature_name) AS total_features
 FROM
@@ -70,7 +76,8 @@ FROM
 -- *****************************
 -- Support Tickets Table
 -- *****************************
--- Total features
+Average Resolution TIME IN Hours
+-- 36.50
 SELECT
     AVG(DISTINCT resolution_time_hours)::NUMERIC(10, 2) AS avg_resolution_time_hours
 FROM
