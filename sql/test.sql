@@ -8,5 +8,8 @@ SELECT * FROM analytics.dim_accounts;
 
 SELECT * FROM analytics.dim_date;
 
+SELECT * FROM staging.churn_events;
+
+
 
 
