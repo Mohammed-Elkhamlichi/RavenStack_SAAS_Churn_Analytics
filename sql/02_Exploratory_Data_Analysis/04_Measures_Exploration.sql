@@ -8,6 +8,7 @@ SELECT
 FROM
     analytics.dim_accounts;
 
+-- *****************************
 -- Total Seats
 -- 10280
 SELECT
@@ -15,6 +16,7 @@ SELECT
 FROM
     analytics.dim_accounts;
 
+-- *****************************
 -- Avg Seats per account
 -- 20.56
 SELECT
@@ -32,6 +34,7 @@ SELECT
 FROM
     analytics.fact_subscriptions;
 
+-- *****************************
 -- Total Plans
 -- 3
 SELECT
@@ -39,6 +42,7 @@ SELECT
 FROM
     analytics.fact_subscriptions;
 
+-- *****************************
 -- Total Monthly Recurring Revenue MRR
 -- 11338747.00
 SELECT
@@ -46,6 +50,7 @@ SELECT
 FROM
     analytics.fact_subscriptions;
 
+-- *****************************
 -- Total Annule Recurring Revenue ARR
 -- 136064964.00
 SELECT
