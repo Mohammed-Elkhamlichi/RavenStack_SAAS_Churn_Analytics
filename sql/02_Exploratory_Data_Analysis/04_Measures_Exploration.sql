@@ -76,7 +76,7 @@ FROM
 -- *****************************
 -- Support Tickets Table
 -- *****************************
-Average Resolution TIME IN Hours
+-- Average Resolution Time in Hours
 -- 36.50
 SELECT
     AVG(DISTINCT resolution_time_hours)::NUMERIC(10, 2) AS avg_resolution_time_hours
