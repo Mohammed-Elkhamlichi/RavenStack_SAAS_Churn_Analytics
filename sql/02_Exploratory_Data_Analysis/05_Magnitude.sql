@@ -86,17 +86,48 @@ ORDER BY
 -- Total Usage
 -- Total Annule Reccuring Revenue ARR
 -- By Feature Name
+WITH
+    base_query AS (
+        SELECT
+            f.feature_name,
+            s.subscription_id,
+            s.account_id,
+            s.arr_amount,
+            SUM(f.usage_count) AS feature_usage
+        FROM
+            analytics.fact_feature_usage f
+            LEFT JOIN analytics.fact_subscriptions s ON s.subscription_id = f.subscription_id
+        GROUP BY
+            f.feature_name,
+            s.subscription_id,
+            s.account_id,
+            s.arr_amount
+    )
 SELECT
-    f.feature_name,
-    COUNT(DISTINCT s.account_id) AS total_accounts,
-    SUM(f.usage_count) AS total_usage,
-    -- Format as text for display, or leave raw numeric if using in Power BI
-    TO_CHAR(ROUND(SUM(s.arr_amount)), 'FM$999,999,999,999') AS total_arr
+    feature_name,
+    COUNT(DISTINCT account_id) AS total_accounts,
+    SUM(feature_usage) AS total_usage,
+    -- Format as text for display
+    TO_CHAR(ROUND(SUM(arr_amount)), 'FM$999,999,999,999') AS total_arr
 FROM
-    analytics.fact_feature_usage f
-    LEFT JOIN analytics.fact_subscriptions s ON s.subscription_id = f.subscription_id
+    base_query
 GROUP BY
-    f.feature_name,
-    f.subscription_id
+    feature_name
 ORDER BY
-    SUM(s.arr_amount) DESC NULLS LAST;
+    SUM(arr_amount) DESC NULLS LAST;
+
+
+-- magnitude analysis of total subscriptions, 
+-- distinct accounts, MRR, ARR, 
+-- and percentage share by plan_tier and billing_frequency.
+SELECT
+    plan_tier,
+    billing_frequency,
+    COUNT(DISTINCT account_id) AS distinct_accounts,
+    SUM(arr_amount) total_arr,
+    SUM(mrr_amount) total_mrr
+FROM
+    analytics.fact_subscriptions
+GROUP BY
+    plan_tier,
+    billing_frequency
