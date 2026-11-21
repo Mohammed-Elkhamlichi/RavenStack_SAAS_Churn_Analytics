@@ -340,7 +340,7 @@ SELECT
     ticket_id,
     account_id,
     TO_TIMESTAMP(submitted_at, 'YYYY-MM-DD')::TIMESTAMP,
-    TO_TIMESTAMP(closed_at, 'YYYY-MM-DD                             HH24:MI:SS')::TIMESTAMP,
+    TO_TIMESTAMP(closed_at, 'YYYY-MM-DD HH24:MI:SS')::TIMESTAMP,
     resolution_time_hours::NUMERIC(10, 2),
     priority,
     first_response_time_minutes::INT,
