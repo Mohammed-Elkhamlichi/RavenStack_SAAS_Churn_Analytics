@@ -61,7 +61,7 @@ FROM
 GROUP BY
     a.country
 ORDER BY
-    total_arr DESC;
+    SUM(s.arr_amount) DESC;
 
 
 -- Find Total Accounts
@@ -79,7 +79,7 @@ FROM
 GROUP BY
     a.industry
 ORDER BY
-    total_arr DESC;
+    SUM(s.arr_amount) DESC;
 
 
 -- Find Total Accounts
@@ -120,14 +120,32 @@ ORDER BY
 -- magnitude analysis of total subscriptions, 
 -- distinct accounts, MRR, ARR, 
 -- and percentage share by plan_tier and billing_frequency.
+WITH
+    base_query AS (
+        SELECT
+            plan_tier,
+            billing_frequency,
+            COUNT(DISTINCT account_id) AS distinct_accounts,
+            COUNT(subscription_id) AS total_subscriptions,
+            COALESCE(SUM(arr_amount), 0) total_arr,
+            COALESCE(SUM(mrr_amount), 0) total_mrr
+        FROM
+            analytics.fact_subscriptions
+        GROUP BY
+            plan_tier,
+            billing_frequency
+    )
 SELECT
     plan_tier,
     billing_frequency,
-    COUNT(DISTINCT account_id) AS distinct_accounts,
-    SUM(arr_amount) total_arr,
-    SUM(mrr_amount) total_mrr
+    distinct_accounts,
+    total_subscriptions,
+    total_arr,
+    ROUND((total_arr / SUM(total_arr) OVER ()) * 100, 2) AS arr_share_pct,
+    total_mrr,
+    ROUND((total_mrr / SUM(total_mrr) OVER ()) * 100, 2) AS mrr_share_pct
 FROM
-    analytics.fact_subscriptions
-GROUP BY
-    plan_tier,
-    billing_frequency
+    base_query
+ORDER BY
+    total_arr DESC NULLS LAST,
+    total_mrr DESC NULLS LAST;
