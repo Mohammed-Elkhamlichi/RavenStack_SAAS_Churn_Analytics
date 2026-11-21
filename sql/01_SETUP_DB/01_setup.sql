@@ -10,7 +10,9 @@
 -- =========================================================================
 CREATE SCHEMA IF NOT EXISTS staging;
 
+
 CREATE SCHEMA IF NOT EXISTS analytics;
+
 
 -- =========================================================================
 -- STEP 2: CREATE STAGING TABLES (The Raw Landing Zone)
@@ -19,6 +21,7 @@ CREATE SCHEMA IF NOT EXISTS analytics;
 -- =========================================================================
 -- 2.1 Staging Accounts
 DROP TABLE IF EXISTS staging.accounts CASCADE;
+
 
 CREATE TABLE
     staging.accounts (
@@ -35,6 +38,7 @@ CREATE TABLE
     )
     -- 2.2 Staging Subscriptions
 DROP TABLE IF EXISTS staging.subscriptions CASCADE;
+
 
 CREATE TABLE
     staging.subscriptions (
@@ -54,8 +58,10 @@ CREATE TABLE
         auto_renew_flag TEXT
     );
 
+
 -- 2.3 Staging Feature Usage
 DROP TABLE IF EXISTS staging.feature_usage CASCADE;
+
 
 CREATE TABLE
     staging.feature_usage (
@@ -69,8 +75,10 @@ CREATE TABLE
         is_beta_feature TEXT
     );
 
+
 -- 2.4 Staging Support Tickets
 DROP TABLE IF EXISTS staging.support_tickets CASCADE;
+
 
 CREATE TABLE
     staging.support_tickets (
@@ -85,8 +93,10 @@ CREATE TABLE
         escalation_flag TEXT
     );
 
+
 -- 2.5 Staging Churn Events
 DROP TABLE IF EXISTS staging.churn_events CASCADE;
+
 
 CREATE TABLE
     staging.churn_events (
@@ -100,6 +110,7 @@ CREATE TABLE
         is_reactivation TEXT,
         feedback_text TEXT
     );
+
 
 -- =========================================================================
 -- STEP 3: LOAD RAW DATA INTO STAGING (COPY Commands)
@@ -125,6 +136,7 @@ CREATE TABLE
 -- 4.1 Dimension: Accounts
 DROP TABLE IF EXISTS analytics.dim_accounts CASCADE;
 
+
 CREATE TABLE
     analytics.dim_accounts (
         account_id VARCHAR(50) PRIMARY KEY,
@@ -139,8 +151,10 @@ CREATE TABLE
         churn_flag BOOLEAN NOT NULL
     );
 
+
 -- 4.2 Fact: Subscriptions (Revenue & Plan Changes)
 DROP TABLE IF EXISTS analytics.fact_subscriptions CASCADE;
+
 
 CREATE TABLE
     analytics.fact_subscriptions (
@@ -160,8 +174,10 @@ CREATE TABLE
         auto_renew_flag BOOLEAN NOT NULL
     );
 
+
 -- 4.3 Fact: Feature Usage (Product Telemetry)
 DROP TABLE IF EXISTS analytics.fact_feature_usage CASCADE;
+
 
 CREATE TABLE
     analytics.fact_feature_usage (
@@ -175,8 +191,10 @@ CREATE TABLE
         is_beta_feature BOOLEAN NOT NULL
     );
 
+
 -- 4.4 Fact: Support Tickets (Customer Friction)
 DROP TABLE IF EXISTS analytics.fact_support_tickets CASCADE;
+
 
 CREATE TABLE
     analytics.fact_support_tickets (
@@ -191,8 +209,10 @@ CREATE TABLE
         escalation_flag BOOLEAN NOT NULL
     );
 
+
 -- 4.5 Dimension: Churn Events
 DROP TABLE IF EXISTS analytics.dim_churn_events CASCADE;
+
 
 CREATE TABLE
     analytics.dim_churn_events (
@@ -206,6 +226,7 @@ CREATE TABLE
         is_reactivation BOOLEAN NOT NULL,
         feedback_text VARCHAR(255)
     );
+
 
 -- =========================================================================
 -- STEP 5: TRANSFORM & LOAD DATA INTO ANALYTICS TABLES
@@ -238,6 +259,7 @@ SELECT
     churn_flag::BOOLEAN
 FROM
     staging.accounts;
+
 
 -- 5.2 Load fact_subscriptions
 INSERT INTO
@@ -275,6 +297,7 @@ SELECT
 FROM
     staging.subscriptions;
 
+
 -- 5.3 Load fact_feature_usage
 INSERT INTO
     analytics.fact_feature_usage (
@@ -299,6 +322,7 @@ SELECT
 FROM
     staging.feature_usage;
 
+
 -- 5.4 Load fact_support_tickets
 INSERT INTO
     analytics.fact_support_tickets (
@@ -316,7 +340,7 @@ SELECT
     ticket_id,
     account_id,
     TO_TIMESTAMP(submitted_at, 'YYYY-MM-DD')::TIMESTAMP,
-    TO_TIMESTAMP(closed_at, 'YYYY-MM-DD HH24:MI:SS')::TIMESTAMP,
+    TO_TIMESTAMP(closed_at, 'YYYY-MM-DD                             HH24:MI:SS')::TIMESTAMP,
     resolution_time_hours::NUMERIC(10, 2),
     priority,
     first_response_time_minutes::INT,
@@ -324,6 +348,7 @@ SELECT
     escalation_flag::BOOLEAN
 FROM
     staging.support_tickets;
+
 
 -- 5.5 Load dim_churn_events
 INSERT INTO
@@ -353,6 +378,7 @@ SELECT
     LOWER(TRIM(feedback_text))
 FROM
     staging.churn_events;
+
 
 -- =========================================================================
 -- SETUP COMPLETE! The star schema is now ready for analytical queries & MRR calculations.

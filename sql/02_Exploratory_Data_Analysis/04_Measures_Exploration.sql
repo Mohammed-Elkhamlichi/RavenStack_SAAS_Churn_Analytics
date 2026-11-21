@@ -2,88 +2,88 @@
 -- Accounts Table
 -- *****************************
 -- Total Accounts
--- 500
 SELECT
-    COUNT(DISTINCT account_id) AS total_accounts
+    'Total Accounts'           AS measure_name,
+    COUNT(DISTINCT account_id) AS measure_value
 FROM
-    analytics.dim_accounts;
-
+    analytics.dim_accounts
+UNION ALL
 -- *****************************
 -- Total Seats
--- 10280
 SELECT
-    SUM(initial_seats) AS total_seats
+    'Total             Seats',
+    SUM(initial_seats)
 FROM
-    analytics.dim_accounts;
-
+    analytics.dim_accounts
+UNION ALL
 -- *****************************
 -- Avg Seats per account
--- 20.56
 SELECT
-    AVG(initial_seats) AS avg_seats_per_account
+    'Avg Seats per                 account',
+    AVG(initial_seats)::NUMERIC(10,         2)
 FROM
-    analytics.dim_accounts;
-
+    analytics.dim_accounts
+UNION ALL
 -- *****************************
 -- Subscriptions Table
 -- *****************************
 -- Total Subscriptions
---  5000
 SELECT
-    COUNT(subscription_id) AS total_subscription
+    'Total                 Subscriptions',
+    COUNT(subscription_id)
 FROM
-    analytics.fact_subscriptions;
-
+    analytics.fact_subscriptions
+UNION ALL
 -- *****************************
 -- Total Plans
--- 3
 SELECT
-    COUNT(DISTINCT plan_tier) AS total_plans
+    'Total         Plans',
+    COUNT(DISTINCT        plan_tier)
 FROM
-    analytics.fact_subscriptions;
-
+    analytics.fact_subscriptions
+UNION ALL
 -- *****************************
 -- Total Monthly Recurring Revenue MRR
--- 11338747.00
 SELECT
-    SUM(mrr_amount) AS total_mrr_amount
+    'Total Monthly Recurring Revenue MRR',
+    ROUND(SUM(mrr_amount))
 FROM
-    analytics.fact_subscriptions;
-
+    analytics.fact_subscriptions
+UNION ALL
 -- *****************************
 -- Total Annule Recurring Revenue ARR
--- 136064964.00
 SELECT
-    SUM(arr_amount) AS total_arr_amount
+    'Total Annule Recurring Revenue ARR',
+    ROUND(SUM(arr_amount))
 FROM
-    analytics.fact_subscriptions;
-
+    analytics.fact_subscriptions
+UNION ALL
 -- *****************************
 -- Churn Events Table
 -- *****************************
 -- Total Refund Amount USD
--- 8652.25
 SELECT
-    SUM(refund_amount_usd) AS total_refund_usd
+    'Total Refund Amount   USD',
+    SUM(refund_amount_usd)
 FROM
-    analytics.dim_churn_events;
-
+    analytics.dim_churn_events
+UNION ALL
 -- *****************************
 -- Feature Usage Table
 -- *****************************
 -- Total features
--- 40 Unique Features
 SELECT
-    COUNT(DISTINCT feature_name) AS total_features
+    'Total         Features',
+    COUNT(DISTINCT           feature_name)
 FROM
-    analytics.fact_feature_usage;
-
+    analytics.fact_feature_usage
+UNION ALL
 -- *****************************
 -- Support Tickets Table
 -- *****************************
 -- Average Resolution Time in Hours
--- 36.50
 SELECT
-    AVG(DISTINCT resolution_time_hours)::NUMERIC(10, 2) AS avg_resolution_time_hours
+    'Average Resolution Time in                     Hours',
+    AVG(DISTINCT resolution_time_hours)::NUMERIC(10,       2)
 FROM
     analytics.fact_support_tickets;

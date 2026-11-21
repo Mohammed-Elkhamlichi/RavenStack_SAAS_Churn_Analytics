@@ -8,3 +8,7 @@ Thumbs.db
 
 # Power BI temp/backup files (keep the main .pbix file tracked)
 *.pbix.bak
+
+# Others
+.project
+.dbeaver/
