@@ -201,6 +201,7 @@ WITH
     subscription_lagged AS (
         SELECT
             *,
+            --		 Get The Previous Month Lost MRR
             LAG(lost_mrr) OVER (
                 ORDER BY
                     end_month_date
@@ -212,10 +213,14 @@ SELECT
     end_month_date,
     churned_accounts,
     churned_subscriptions,
+    --	calculate the Average Lost MRR per Subscription
     ROUND(1.0 * lost_mrr / NULLIF(churned_subscriptions, 0), 2) AS avg_lost_mrr_per_sub,
     lost_mrr,
+    --	previous Month lost MRR
     previous_lost_mrr,
+    --	Lost MRR Change Value
     lost_mrr - previous_lost_mrr AS lost_mrr_change,
+    --	Lost MRR Change Percentage
     ROUND(100.0 * (lost_mrr - previous_lost_mrr) / NULLIF(previous_lost_mrr, 0), 2) AS mom_lost_mrr_growth_pct
 FROM
     subscription_lagged
@@ -231,30 +236,97 @@ ORDER BY
 --                    match active subscriptions (start_date <= month_end AND
 --                    (end_date IS NULL OR end_date >= month_start)).
 -- ----------------------------------------------------------------------------
--- ============================================================================
--- SECTION 3: ACCOUNT ACQUISITION & SEAT FOOTPRINT (analytics.dim_accounts)
--- ============================================================================
--- ----------------------------------------------------------------------------
--- Q6: Monthly Account Signups & Starting Seat Footprint
--- Business Question: How do monthly account signups and total/average
---                    initial_seats trend over time across newer cohorts?
--- Key Logic:         Group dim_accounts by signup month and compare monthly
---                    account volume and seat trends using LAG().
--- ----------------------------------------------------------------------------
--- ============================================================================
--- SECTION 4: PRODUCT ENGAGEMENT & SUPPORT FRICTION
--- ============================================================================
--- ----------------------------------------------------------------------------
--- Q7: Monthly Product Feature Usage Trends
--- Business Question: How do total usage_count and distinct active accounts
---                    trend each month, and which features are growing/declining?
--- Key Logic:         Aggregate fact_feature_usage by month (and feature_name)
---                    independently of subscriptions to avoid revenue fan-out.
--- ----------------------------------------------------------------------------
--- ----------------------------------------------------------------------------
--- Q8: Monthly Support Ticket Volume & High-Severity Friction
--- Business Question: How do monthly support ticket counts—especially urgent
---                    and high priority tickets—trend over time?
--- Key Logic:         Group fact_support_tickets by month, exclude the invalid
---                    'priority' string value, and track MoM volume shifts.
--- ----------------------------------------------------------------------------
+WITH
+    calendar_months AS (
+        SELECT
+            year_month_start::DATE AS year_month_start,
+            -- get the end of each month we have in our month serie
+            (year_month_start + INTERVAL '1 month - 1 day')::DATE AS year_month_end
+        FROM
+            -- create a series of months from the first month in our dataset to the last month 
+            GENERATE_SERIES(
+                -- get the first date in our dataset
+                (
+                    SELECT
+                        DATE_TRUNC('month', MIN(start_date))
+                    FROM
+                        analytics.fact_subscriptions
+                ),
+                -- get the last date in our dataset
+                (
+                    SELECT
+                        DATE_TRUNC('month', GREATEST(MAX(start_date), MAX(end_date)))
+                    FROM
+                        analytics.fact_subscriptions
+                ),
+                INTERVAL '1 month'
+            ) AS year_month_start
+    ),
+    aggregations AS (
+        SELECT
+            cm.year_month_start,
+            COUNT(DISTINCT s.account_id) AS active_accounts,
+            COUNT(s.subscription_id) AS active_subscriptions,
+            SUM(s.mrr_amount) AS active_mrr,
+            LAG(SUM(s.mrr_amount)) OVER (
+                ORDER BY
+                    cm.year_month_start
+            ) AS previous_active_mrr
+        FROM
+            calendar_months cm
+            LEFT JOIN analytics.fact_subscriptions s ON (
+                s.start_date IS NOT NULL
+                AND s.start_date <= cm.year_month_end
+            )
+            AND (
+                s.end_date IS NULL
+                OR s.end_date >= cm.year_month_start
+            )
+            AND (
+                s.end_date IS NULL
+                OR s.end_date >= s.start_date
+            )
+        GROUP BY
+            cm.year_month_start
+        ORDER BY
+            cm.year_month_start
+    )
+SELECT
+    year_month_start,
+    active_accounts,
+    active_subscriptions,
+    active_mrr,
+    previous_active_mrr,
+    --	the Active Monthly Recurring Revenue MRR Change Value
+    active_mrr - previous_active_mrr AS active_mrr_change,
+    --	the Active Monthly Recurring Revenue MRR Month of Month Growth Percentage
+    ROUND(100.0 * (active_mrr - previous_active_mrr) / NULLIF(previous_active_mrr, 0)) AS mom_active_mrr_growth_pct
+FROM
+    aggregations
+    -- ============================================================================
+    -- SECTION 3: ACCOUNT ACQUISITION & SEAT FOOTPRINT (analytics.dim_accounts)
+    -- ============================================================================
+    -- ----------------------------------------------------------------------------
+    -- Q6: Monthly Account Signups & Starting Seat Footprint
+    -- Business Question: How do monthly account signups and total/average
+    --                    initial_seats trend over time across newer cohorts?
+    -- Key Logic:         Group dim_accounts by signup month and compare monthly
+    --                    account volume and seat trends using LAG().
+    -- ----------------------------------------------------------------------------
+    -- ============================================================================
+    -- SECTION 4: PRODUCT ENGAGEMENT & SUPPORT FRICTION
+    -- ============================================================================
+    -- ----------------------------------------------------------------------------
+    -- Q7: Monthly Product Feature Usage Trends
+    -- Business Question: How do total usage_count and distinct active accounts
+    --                    trend each month, and which features are growing/declining?
+    -- Key Logic:         Aggregate fact_feature_usage by month (and feature_name)
+    --                    independently of subscriptions to avoid revenue fan-out.
+    -- ----------------------------------------------------------------------------
+    -- ----------------------------------------------------------------------------
+    -- Q8: Monthly Support Ticket Volume & High-Severity Friction
+    -- Business Question: How do monthly support ticket counts—especially urgent
+    --                    and high priority tickets—trend over time?
+    -- Key Logic:         Group fact_support_tickets by month, exclude the invalid
+    --                    'priority' string value, and track MoM volume shifts.
+    -- ----------------------------------------------------------------------------
