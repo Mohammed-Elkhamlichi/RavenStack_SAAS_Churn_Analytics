@@ -170,49 +170,91 @@ FROM
     subscription_info
 ORDER BY
     year_month_start,
-    billing_frequency
-    -- ============================================================================
-    -- SECTION 2: CHURN & ACTIVE RUN-RATE DYNAMICS
-    -- ============================================================================
-    -- ----------------------------------------------------------------------------
-    -- Q4: Monthly Cancellations & Lost Recurring Revenue
-    -- Business Question: How many subscriptions and distinct accounts end each
-    --                    month, how much MRR/ARR is lost, and is churn accelerating?
-    -- Key Logic:         Filter end_date IS NOT NULL, group by month of end_date,
-    --                    and track MoM changes with LAG().
-    -- ----------------------------------------------------------------------------
-    -- ----------------------------------------------------------------------------
-    -- Q5: Active Run-Rate Over Time (Monthly Calendar Grid)
-    -- Business Question: How many active accounts and how much active MRR/ARR are
-    --                    running in each calendar month across the full timeline?
-    -- Key Logic:         Generate a continuous monthly spine (generate_series) and
-    --                    match active subscriptions (start_date <= month_end AND
-    --                    (end_date IS NULL OR end_date >= month_start)).
-    -- ----------------------------------------------------------------------------
-    -- ============================================================================
-    -- SECTION 3: ACCOUNT ACQUISITION & SEAT FOOTPRINT (analytics.dim_accounts)
-    -- ============================================================================
-    -- ----------------------------------------------------------------------------
-    -- Q6: Monthly Account Signups & Starting Seat Footprint
-    -- Business Question: How do monthly account signups and total/average
-    --                    initial_seats trend over time across newer cohorts?
-    -- Key Logic:         Group dim_accounts by signup month and compare monthly
-    --                    account volume and seat trends using LAG().
-    -- ----------------------------------------------------------------------------
-    -- ============================================================================
-    -- SECTION 4: PRODUCT ENGAGEMENT & SUPPORT FRICTION
-    -- ============================================================================
-    -- ----------------------------------------------------------------------------
-    -- Q7: Monthly Product Feature Usage Trends
-    -- Business Question: How do total usage_count and distinct active accounts
-    --                    trend each month, and which features are growing/declining?
-    -- Key Logic:         Aggregate fact_feature_usage by month (and feature_name)
-    --                    independently of subscriptions to avoid revenue fan-out.
-    -- ----------------------------------------------------------------------------
-    -- ----------------------------------------------------------------------------
-    -- Q8: Monthly Support Ticket Volume & High-Severity Friction
-    -- Business Question: How do monthly support ticket counts—especially urgent
-    --                    and high priority tickets—trend over time?
-    -- Key Logic:         Group fact_support_tickets by month, exclude the invalid
-    --                    'priority' string value, and track MoM volume shifts.
-    -- ----------------------------------------------------------------------------
+    billing_frequency;
+
+
+-- ============================================================================
+-- SECTION 2: CHURN & ACTIVE RUN-RATE DYNAMICS
+-- ============================================================================
+-- ----------------------------------------------------------------------------
+-- Q4: Monthly Cancellations & Lost Recurring Revenue
+-- Business Question: How many subscriptions and distinct accounts end each
+--                    month, how much MRR/ARR is lost, and is churn accelerating?
+-- Key Logic:         Filter end_date IS NOT NULL, group by month of end_date,
+--                    and track MoM changes with LAG().
+-- ----------------------------------------------------------------------------
+WITH
+    subscription_aggregations AS (
+        SELECT
+            DATE_TRUNC('month', s.end_date)::DATE AS end_month_date,
+            COUNT(DISTINCT s.account_id) AS churned_accounts,
+            COUNT(s.subscription_id) AS churned_subscriptions,
+            COALESCE(SUM(s.mrr_amount), 0) AS lost_mrr
+        FROM
+            analytics.fact_subscriptions s
+        WHERE
+            s.end_date IS NOT NULL
+            AND s.end_date >= s.start_date
+        GROUP BY
+            end_month_date
+    ),
+    subscription_lagged AS (
+        SELECT
+            *,
+            LAG(lost_mrr) OVER (
+                ORDER BY
+                    end_month_date
+            ) AS previous_lost_mrr
+        FROM
+            subscription_aggregations
+    )
+SELECT
+    end_month_date,
+    churned_accounts,
+    churned_subscriptions,
+    ROUND(1.0 * lost_mrr / NULLIF(churned_subscriptions, 0), 2) AS avg_lost_mrr_per_sub,
+    lost_mrr,
+    previous_lost_mrr,
+    lost_mrr - previous_lost_mrr AS lost_mrr_change,
+    ROUND(100.0 * (lost_mrr - previous_lost_mrr) / NULLIF(previous_lost_mrr, 0), 2) AS mom_lost_mrr_growth_pct
+FROM
+    subscription_lagged
+ORDER BY
+    end_month_date;
+
+
+-- ----------------------------------------------------------------------------
+-- Q5: Active Run-Rate Over Time (Monthly Calendar Grid)
+-- Business Question: How many active accounts and how much active MRR/ARR are
+--                    running in each calendar month across the full timeline?
+-- Key Logic:         Generate a continuous monthly spine (generate_series) and
+--                    match active subscriptions (start_date <= month_end AND
+--                    (end_date IS NULL OR end_date >= month_start)).
+-- ----------------------------------------------------------------------------
+-- ============================================================================
+-- SECTION 3: ACCOUNT ACQUISITION & SEAT FOOTPRINT (analytics.dim_accounts)
+-- ============================================================================
+-- ----------------------------------------------------------------------------
+-- Q6: Monthly Account Signups & Starting Seat Footprint
+-- Business Question: How do monthly account signups and total/average
+--                    initial_seats trend over time across newer cohorts?
+-- Key Logic:         Group dim_accounts by signup month and compare monthly
+--                    account volume and seat trends using LAG().
+-- ----------------------------------------------------------------------------
+-- ============================================================================
+-- SECTION 4: PRODUCT ENGAGEMENT & SUPPORT FRICTION
+-- ============================================================================
+-- ----------------------------------------------------------------------------
+-- Q7: Monthly Product Feature Usage Trends
+-- Business Question: How do total usage_count and distinct active accounts
+--                    trend each month, and which features are growing/declining?
+-- Key Logic:         Aggregate fact_feature_usage by month (and feature_name)
+--                    independently of subscriptions to avoid revenue fan-out.
+-- ----------------------------------------------------------------------------
+-- ----------------------------------------------------------------------------
+-- Q8: Monthly Support Ticket Volume & High-Severity Friction
+-- Business Question: How do monthly support ticket counts—especially urgent
+--                    and high priority tickets—trend over time?
+-- Key Logic:         Group fact_support_tickets by month, exclude the invalid
+--                    'priority' string value, and track MoM volume shifts.
+-- ----------------------------------------------------------------------------
