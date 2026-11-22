@@ -9,6 +9,7 @@ SELECT
 FROM
     analytics.fact_subscriptions;
 
+
 -- ****************************************************
 -- Accounts boundarais
 -- ****************************************************
@@ -18,6 +19,7 @@ SELECT
     MAX(signup_date) AS last_signup_date
 FROM
     analytics.dim_accounts;
+
 
 -- ****************************************************
 -- Churn Events boundarais
