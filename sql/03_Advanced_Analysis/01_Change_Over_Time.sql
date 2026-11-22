@@ -142,7 +142,7 @@ SELECT
     year_month_start,
     billing_frequency,
     total_accounts,
-    --	Calculate the Subscription Share % of each Billing Frequency of each month total subscription
+    --	Calculate the Subscription Share % of each Billing Frequency out of each month's total subscriptions
     total_subscriptions,
     ROUND(
         100.0 * total_subscriptions / NULLIF(
@@ -155,7 +155,7 @@ SELECT
         2
     ) AS subscription_share_pct,
     total_mrr,
-    -- Calculate the Share % of each billing frequency of each month total MRR
+    -- Calculate the Share % of each billing frequency out of each month total's total MRR 
     ROUND(
         100.0 * total_mrr / NULLIF(
             SUM(total_mrr) OVER (
