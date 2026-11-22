@@ -1,8 +1,8 @@
 /*
-Order the Value of Dimensions by measures:
+Ranking the Value of Dimensions by measures:
 Examples:
-=> Order Subscriptions plan by total Annule Recurring Revenue ARR or MRR
-=> Order features by total usage ...
+=> Ranking Subscriptions plan by total Annule Recurring Revenue ARR or MRR
+=> Ranking features by total usage ...
 Top N Performers and Bottom N Performers
  */
 --What are the 5 worst-performing features in term of ARR
