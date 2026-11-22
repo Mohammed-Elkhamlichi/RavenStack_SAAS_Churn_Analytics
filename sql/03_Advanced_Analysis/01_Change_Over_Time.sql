@@ -111,14 +111,54 @@ FROM
     subscription_mrr_lagged
 ORDER BY
     year_month_start,
-    plan_tier
-    -- ----------------------------------------------------------------------------
-    -- Q3: Monthly Billing Frequency Mix (Monthly vs. Annual)
-    -- Business Question: How do monthly vs. annual subscription starts and revenue
-    --                    shift over time as a share of each month's new revenue?
-    -- Key Logic:         Group by month and billing_frequency; calculate monthly
-    --                    revenue share % with SUM(...) OVER (PARTITION BY month).
-    -- ----------------------------------------------------------------------------
+    plan_tier;
+
+
+-- ----------------------------------------------------------------------------
+-- Q3: Monthly Billing Frequency Mix (Monthly vs. Annual)
+-- Business Question: How do monthly vs. annual subscription starts and revenue
+--                    shift over time as a share of each month's new revenue?
+-- Key Logic:         Group by month and billing_frequency; calculate monthly
+--                    revenue share % with SUM(...) OVER (PARTITION BY month).
+-- ----------------------------------------------------------------------------
+WITH
+    subscription_info AS (
+        SELECT
+            DATE_TRUNC('month', start_date)::DATE AS year_month_start,
+            billing_frequency,
+            COUNT(DISTINCT account_id) AS total_accounts,
+            COUNT(subscription_id) AS total_subscriptions,
+            -- Total MRR By Billing Frequency
+            COALESCE(SUM(mrr_amount), 0) AS total_mrr
+        FROM
+            analytics.fact_subscriptions
+        WHERE
+            start_date IS NOT NULL
+        GROUP BY
+            year_month_start,
+            billing_frequency
+    )
+SELECT
+    year_month_start,
+    billing_frequency,
+    total_accounts,
+    total_subscriptions,
+    total_mrr,
+    -- Calculate the Share % of each billing frequency of each month total MRR
+    ROUND(
+        100.0 * total_mrr / NULLIF(
+            SUM(total_mrr) OVER (
+                PARTITION BY
+                    year_month_start
+            ),
+            0
+        )
+    ) AS mrr_share_pct
+FROM
+    subscription_info
+ORDER BY
+    year_month_start,
+    billing_frequency
     -- ============================================================================
     -- SECTION 2: CHURN & ACTIVE RUN-RATE DYNAMICS
     -- ============================================================================
