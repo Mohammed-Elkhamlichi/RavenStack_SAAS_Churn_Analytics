@@ -443,3 +443,100 @@ ORDER BY
 -- Key Logic:         Group fact_support_tickets by month, exclude the invalid
 --                    'priority' string value, and track MoM volume shifts.
 -- ----------------------------------------------------------------------------
+WITH
+    support_ticket_cleanup AS (
+        SELECT
+            ticket_id,
+            account_id,
+            MAKE_DATE(
+                2000 + EXTRACT(
+                    DAY
+                    FROM
+                        submitted_at
+                )::INT, -- day position holds 2-digit year (e.g., 23 -> 2023)
+                EXTRACT(
+                    MONTH
+                    FROM
+                        submitted_at
+                )::INT, -- month stays in the middle (e.g., 07)
+                EXTRACT(
+                    YEAR
+                    FROM
+                        submitted_at
+                )::INT -- year position holds the day (e.g., 27)
+            ) AS submitted_date,
+            LOWER(TRIM(priority)) AS clean_priority
+        FROM
+            analytics.fact_support_tickets
+        WHERE
+            submitted_at IS NOT NULL
+            AND priority IN ('urgent', 'high', 'medium', 'low')
+    ),
+    support_ticket_aggregation AS (
+        SELECT
+            DATE_TRUNC('month', submitted_date)::DATE AS ticket_month,
+            COUNT(ticket_id) AS total_tickets,
+            COUNT(DISTINCT account_id) AS total_accounts,
+            -- Filter and Count The Tickets With 'urgent' and 'high' priorities
+            COUNT(ticket_id) FILTER (
+                WHERE
+                    clean_priority IN ('urgent', 'high')
+            ) AS high_severity_tickets
+        FROM
+            support_ticket_cleanup
+        GROUP BY
+            ticket_month
+    ),
+    support_ticket_lagged AS (
+        SELECT
+            *,
+            -- The Previous Total Tickets 
+            LAG(total_tickets) OVER (
+                ORDER BY
+                    ticket_month
+            ) AS previous_total_tickets,
+            -- The Previous Total High Severity Tickets  
+            LAG(high_severity_tickets) OVER (
+                ORDER BY
+                    ticket_month
+            ) AS previous_high_severity_tickets
+        FROM
+            support_ticket_aggregation
+    ),
+    support_ticket_growth AS (
+        SELECT
+            *,
+            -- all tickets involve here
+            -- The Total Ticket MoM Change Value
+            total_tickets - previous_total_tickets AS ticket_change,
+            -- The Support Ticket MoM Change Percentage
+            ROUND(100.0 * (total_tickets - previous_total_tickets) / NULLIF(previous_total_tickets, 0), 2) AS mom_ticket_growth_pct,
+            -- Only High Severity Tickets ('urgent','high') involve here
+            -- The Total High Severity Ticket MoM Change Value
+            high_severity_tickets - previous_high_severity_tickets AS high_severity_tickets_change,
+            -- The Total High Severity Ticket MoM Change Percentage
+            ROUND(
+                100.0 * (high_severity_tickets - previous_high_severity_tickets) / NULLIF(previous_high_severity_tickets, 0),
+                2
+            ) AS mom_high_severity_tickets_growth_pct,
+            -- Calculate the High Severity Tickets Percentage Share from the Total Tickets
+            ROUND(100.0 * high_severity_tickets / NULLIF(total_tickets, 0), 2) AS high_severity_share_pct
+        FROM
+            support_ticket_lagged
+    )
+SELECT
+    ticket_month,
+    total_accounts,
+    total_tickets,
+    previous_total_tickets,
+    ticket_change,
+    mom_ticket_growth_pct,
+    high_severity_tickets,
+    previous_high_severity_tickets,
+    high_severity_tickets_change,
+    mom_high_severity_tickets_growth_pct,
+    high_severity_share_pct
+FROM
+    support_ticket_growth
+ORDER BY
+    ticket_month;
