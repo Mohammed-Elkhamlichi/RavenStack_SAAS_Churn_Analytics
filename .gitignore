@@ -13,4 +13,5 @@ Thumbs.db
 .project
 .dbeaver/
 Scripts/
-RavenStack DB.session.sql
+.RavenStack DB.session.sql
+/RavenStack DB.session.sql
