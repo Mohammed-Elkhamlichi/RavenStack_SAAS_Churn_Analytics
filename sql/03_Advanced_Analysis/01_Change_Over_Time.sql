@@ -448,23 +448,17 @@ WITH
         SELECT
             ticket_id,
             account_id,
-            MAKE_DATE(
-                2000 + EXTRACT(
-                    DAY
-                    FROM
-                        submitted_at
-                )::INT, -- day position holds 2-digit year (e.g., 23 -> 2023)
-                EXTRACT(
-                    MONTH
-                    FROM
-                        submitted_at
-                )::INT, -- month stays in the middle (e.g., 07)
-                EXTRACT(
-                    YEAR
-                    FROM
-                        submitted_at
-                )::INT -- year position holds the day (e.g., 27)
-            ) AS submitted_date,
+            
+            CASE
+            --Converting the date from this 0027-07-23 00:00:00 to this 2023-07-27
+                WHEN EXTRACT(YEAR FROM submitted_at) < 100
+                    THEN MAKE_DATE(
+                        2000 + EXTRACT(DAY FROM submitted_at)::INT,
+                        EXTRACT(MONTH FROM submitted_at)::INT,
+                        EXTRACT(YEAR FROM submitted_at)::INT
+                    )
+                ELSE submitted_at::DATE
+            END AS submitted_date,
             LOWER(TRIM(priority)) AS clean_priority
         FROM
             analytics.fact_support_tickets
