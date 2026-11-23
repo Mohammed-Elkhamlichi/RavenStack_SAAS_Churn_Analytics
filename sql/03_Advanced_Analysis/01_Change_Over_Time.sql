@@ -106,7 +106,7 @@ SELECT
     total_mrr,
     previous_mrr,
     total_mrr - previous_mrr AS mrr_change_value,
-    ROUND(100 * (total_mrr - previous_mrr) / NULLIF(previous_mrr, 0), 2) AS mom_mrr_growth_pct
+    ROUND(100.0 * (total_mrr - previous_mrr) / NULLIF(previous_mrr, 0), 2) AS mom_mrr_growth_pct
 FROM
     subscription_mrr_lagged
 ORDER BY
@@ -287,8 +287,6 @@ WITH
             )
         GROUP BY
             cm.year_month_start
-        ORDER BY
-            cm.year_month_start
     )
 SELECT
     year_month_start,
@@ -301,7 +299,9 @@ SELECT
     --	the Active Monthly Recurring Revenue MRR Month of Month Growth Percentage
     ROUND(100.0 * (active_mrr - previous_active_mrr) / NULLIF(previous_active_mrr, 0), 2) AS mom_active_mrr_growth_pct
 FROM
-    aggregations;
+    aggregations
+ORDER BY
+    year_month_start;
 
 
 -- ============================================================================
@@ -314,15 +314,59 @@ FROM
 -- Key Logic:         Group dim_accounts by signup month and compare monthly
 --                    account volume and seat trends using LAG().
 -- ----------------------------------------------------------------------------
+WITH
+    account_signup_aggregation AS (
+        SELECT
+            DATE_TRUNC('month', signup_date)::DATE AS signup_month,
+            -- Total new accounts
+            COUNT(DISTINCT account_id) AS new_accounts,
+            -- Total initial seats
+            COALESCE(SUM(initial_seats), 0) AS total_initial_seats,
+            -- Average initial seats per new account
+            ROUND(1.0 * COALESCE(SUM(initial_seats), 0) / NULLIF(COUNT(DISTINCT account_id), 0), 2) AS avg_initial_seats
+        FROM
+            analytics.dim_accounts
+        WHERE
+            signup_date IS NOT NULL
+        GROUP BY
+            signup_month
+    ),
+    accounts_signup_lagged AS (
+        SELECT
+            signup_month,
+            new_accounts,
+            -- Previous month new accounts
+            LAG(new_accounts) OVER (
+                ORDER BY
+                    signup_month
+            ) AS previous_new_accounts,
+            total_initial_seats,
+            avg_initial_seats,
+            -- Previous month total initial seats
+            LAG(total_initial_seats) OVER (
+                ORDER BY
+                    signup_month
+            ) AS previous_initial_seats
+        FROM
+            account_signup_aggregation
+    )
 SELECT
-    DATE_TRUNC('month', signup_date)::DATE AS signup_month,
-    COUNT(account_id) AS total_accounts,
-    COALESCE(SUM(initial_seats), 0) AS total_seats,
-    ROUND(COALESCE(AVG(initial_seats)), 0) AS avg_seats
+    signup_month,
+    new_accounts,
+    previous_new_accounts,
+    -- New account MoM change value
+    new_accounts - previous_new_accounts AS account_change,
+    -- New account MoM growth percentage
+    ROUND(100.0 * (new_accounts - previous_new_accounts) / NULLIF(previous_new_accounts, 0), 2) AS mom_account_growth_pct,
+    total_initial_seats,
+    avg_initial_seats,
+    previous_initial_seats,
+    -- Total initial seats MoM change value
+    total_initial_seats - previous_initial_seats AS seats_change,
+    -- Total initial seats MoM growth percentage
+    ROUND(100.0 * (total_initial_seats - previous_initial_seats) / NULLIF(previous_initial_seats, 0), 2) AS mom_seats_growth_pct
 FROM
-    analytics.dim_accounts
-GROUP BY
-    signup_month
+    accounts_signup_lagged
 ORDER BY
     signup_month;
 
