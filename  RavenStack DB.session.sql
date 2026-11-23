@@ -1,0 +1,10 @@
+-- ============================================================================
+-- SECTION 3: ACCOUNT ACQUISITION & SEAT FOOTPRINT (analytics.dim_accounts)
+-- ============================================================================
+-- ----------------------------------------------------------------------------
+-- Q6: Monthly Account Signups & Starting Seat Footprint
+-- Business Question: How do monthly account signups and total/average
+--                    initial_seats trend over time across newer cohorts?
+-- Key Logic:         Group dim_accounts by signup month and compare monthly
+--                    account volume and seat trends using LAG().
+-- ----------------------------------------------------------------------------
