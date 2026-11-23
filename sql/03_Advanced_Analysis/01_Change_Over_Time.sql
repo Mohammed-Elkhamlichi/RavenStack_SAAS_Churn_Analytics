@@ -375,12 +375,67 @@ ORDER BY
 -- SECTION 4: PRODUCT ENGAGEMENT & SUPPORT FRICTION
 -- ============================================================================
 -- ----------------------------------------------------------------------------
--- Q7: Monthly Product Feature Usage Trends
+-- Q7: Monthly Feature Usage Trends
 -- Business Question: How do total usage_count and distinct active accounts
 --                    trend each month, and which features are growing/declining?
 -- Key Logic:         Aggregate fact_feature_usage by month (and feature_name)
 --                    independently of subscriptions to avoid revenue fan-out.
 -- ----------------------------------------------------------------------------
+WITH
+    feature_usage AS (
+        SELECT
+            DATE_TRUNC('month', usage_date)::date AS usage_month,
+            feature_name,
+            COUNT(DISTINCT subscription_id) AS total_subscriptions,
+            COALESCE(SUM(usage_count), 0) AS total_usage,
+            -- The Average Usage Per Subscription
+            ROUND(1.0 * COALESCE(SUM(usage_count), 0) / NULLIF(COUNT(subscription_id), 0), 2) AS avg_usage_per_sub
+        FROM
+            analytics.fact_feature_usage
+        WHERE
+            usage_date IS NOT NULL
+        GROUP BY
+            usage_month,
+            feature_name
+    ),
+    feature_usage_lagged AS (
+        SELECT
+            *,
+            -- The Previous Feature Total Usage
+            LAG(total_usage) OVER (
+                PARTITION BY
+                    feature_name
+                ORDER BY
+                    usage_month
+            ) AS previous_total_usage
+        FROM
+            feature_usage
+    ),
+    feature_usage_growth AS (
+        SELECT
+            usage_month,
+            feature_name,
+            total_subscriptions,
+            total_usage,
+            avg_usage_per_sub,
+            previous_total_usage,
+            -- The Feature Total Usage Month Over Month Change Value
+            total_usage - previous_total_usage AS usage_change,
+            -- The Feature Total Usage Month Over Month Change Percentage
+            ROUND(100.0 * (total_usage - previous_total_usage) / NULLIF(previous_total_usage, 0), 2) AS mom_usage_growth_pct
+        FROM
+            feature_usage_lagged
+    )
+SELECT
+    *
+FROM
+    feature_usage_growth
+ORDER BY
+    usage_month,
+    -- feature_2 ..., get the number from the feature name and order this column based on the feature number
+    NULLIF(SPLIT_PART(feature_name, '_', 2), '')::INTEGER ASC NULLS LAST;
+
+
 -- ----------------------------------------------------------------------------
 -- Q8: Monthly Support Ticket Volume & High-Severity Friction
 -- Business Question: How do monthly support ticket counts—especially urgent
