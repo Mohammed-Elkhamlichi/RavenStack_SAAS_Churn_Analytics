@@ -448,15 +448,29 @@ WITH
         SELECT
             ticket_id,
             account_id,
-            
             CASE
             --Converting the date from this 0027-07-23 00:00:00 to this 2023-07-27
-                WHEN EXTRACT(YEAR FROM submitted_at) < 100
-                    THEN MAKE_DATE(
-                        2000 + EXTRACT(DAY FROM submitted_at)::INT,
-                        EXTRACT(MONTH FROM submitted_at)::INT,
-                        EXTRACT(YEAR FROM submitted_at)::INT
-                    )
+                WHEN EXTRACT(
+                    YEAR
+                    FROM
+                        submitted_at
+                ) < 100 THEN MAKE_DATE(
+                    2000 + EXTRACT(
+                        DAY
+                        FROM
+                            submitted_at
+                    )::INT,
+                    EXTRACT(
+                        MONTH
+                        FROM
+                            submitted_at
+                    )::INT,
+                    EXTRACT(
+                        YEAR
+                        FROM
+                            submitted_at
+                    )::INT
+                )
                 ELSE submitted_at::DATE
             END AS submitted_date,
             LOWER(TRIM(priority)) AS clean_priority
@@ -464,7 +478,7 @@ WITH
             analytics.fact_support_tickets
         WHERE
             submitted_at IS NOT NULL
-            AND priority IN ('urgent', 'high', 'medium', 'low')
+            AND LOWER(TRIM(priority)) IN ('urgent', 'high', 'medium', 'low')
     ),
     support_ticket_aggregation AS (
         SELECT

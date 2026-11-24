@@ -1,0 +1,390 @@
+RavenStack — Final Dataset Assessment & Analytical Blueprint
+Now we have something much more useful: the actual schemas of all five tables.
+
+This changes my recommendations. Your dataset supports more interesting analysis than we initially identified, particularly around customer acquisition sources, churn reasons, subscription upgrades/downgrades, support performance, and customer retention.
+
+My recommendation is to build this as a SaaS Business Performance & Customer Churn Analytics project, rather than limiting it to churn analysis.
+1. Confirmed data model
+You have five tables:
+RavenStack database
+dim_accounts
+
+Customer dimension · 10 columns
+
+account_id · account_name · industry · country · signup_date · referral_source · initial_plan · initial_seats · is_trial · churn_flag
+
+dim_churn_events
+
+Churn event dimension · 9 columns
+
+churn_event_id · account_id · churn_date · reason_code · refund_amount_usd · preceding_upgrade_flag · preceding_downgrade_flag · is_reactivation · feedback_text
+
+fact_subscriptions
+
+Subscription fact · 14 columns
+
+subscription_id · account_id · start_date · end_date · plan_tier · seats · mrr_amount · arr_amount · is_trial · upgrade_flag · downgrade_flag · churn_flag · billing_frequency · auto_renew_flag
+
+fact_feature_usage
+
+Product usage fact · 8 columns
+
+usage_id · subscription_id · usage_date · feature_name · usage_count · usage_duration_secs · error_count · is_beta_feature
+
+fact_support_tickets
+
+Support fact · 9 columns
+
+ticket_id · account_id · submitted_at · closed_at · resolution_time_hours · priority · first_response_time_minutes · satisfaction_score · escalation_flag
+
+Blue = dimension tables · Green = fact tables. This is a proposed analytical interpretation based on the table names and columns, not a verified physical data model.
+
+2. Relationships to investigate
+Before building the Power BI model, verify these relationships:
+Relationship	Expected cardinality
+Accounts → Subscriptions	One-to-many
+Accounts → Churn events	One-to-many
+Subscriptions → Feature usage	One-to-many
+Accounts → Support tickets	One-to-many
+
+Do not assume that these relationships are enforced by database constraints. Check for orphan records and duplicate keys.
+
+An important detail: dim_churn_events may contain multiple churn events per account, especially because it has is_reactivation. This could represent repeated churn and reactivation cycles.
+
+That makes it particularly important not to treat dim_accounts.churn_flag as a complete historical churn measure.
+3. The most valuable business questions this dataset can answer
+I would organize the analysis into seven domains.
+A. Revenue and subscription performance
+Highest priority
+#	Business question	Required columns
+1	How does MRR evolve over time?	start_date, end_date, mrr_amount
+2	Which subscription plans generate the most revenue?	plan_tier, mrr_amount
+3	Which billing frequency contributes most to revenue?	billing_frequency, mrr_amount
+4	How much recurring revenue is lost through cancellations?	end_date, mrr_amount, churn_flag
+5	How does active subscription volume evolve?	start_date, end_date, subscription_id
+6	How do upgrades and downgrades affect subscription revenue?	upgrade_flag, downgrade_flag, mrr_amount
+7	How does auto-renewal adoption vary by plan?	auto_renew_flag, plan_tier
+
+Particularly valuable: Analyze upgrades and downgrades alongside MRR. This helps explain changes in revenue beyond new subscriptions and cancellations.
+B. Customer acquisition and segmentation
+Your dataset has useful acquisition fields that we hadn't included in the original scope.
+#	Business question	Required columns
+8	How many new accounts sign up each month?	signup_date, account_id
+9	Which referral sources bring the most customers?	referral_source, account_id
+10	Which referral sources bring customers with higher initial seat counts?	referral_source, initial_seats
+11	Which industries contribute the most accounts and revenue?	industry, account_id, subscription data
+12	Which countries contribute the most customers and revenue?	country, account_id, subscription data
+13	What percentage of accounts start with a trial?	is_trial, account_id
+14	Which initial plans are most popular?	initial_plan, account_id
+
+My recommendation: Referral source analysis should be included. It gives your project an acquisition dimension that many beginner SaaS projects lack.
+
+Be careful, though: a referral source with many signups is not necessarily the most valuable source. Compare signups, revenue, and retention.
+C. Customer churn and retention
+Highest priority
+#	Business question	Required columns
+15	How many accounts churn over time?	churn_date, account_id
+16	What is the customer churn rate?	Churn events, account lifecycle
+17	What are the most common churn reasons?	reason_code
+18	Which industries experience the highest churn?	industry, churn_flag
+19	Which countries experience the highest churn?	country, churn_flag
+20	How long do customers stay before churning?	signup_date, churn_date
+21	How much money is refunded after churn?	refund_amount_usd
+22	How frequently do customers reactivate?	is_reactivation, account_id
+23	Does churn vary by initial plan?	initial_plan, churn_flag
+
+A particularly interesting investigation:
+
+What are the main reasons customers leave RavenStack, and do those reasons differ by industry, country, or initial plan?
+
+You can potentially use feedback_text to investigate customer complaints in addition to the structured reason_code.
+
+Don't treat free-text feedback as structured categories until you've examined and classified it.
+D. Product engagement and feature adoption
+#	Business question	Required columns
+24	Which features are used most frequently?	feature_name, usage_count
+25	How does feature usage evolve over time?	usage_date, feature_name, usage_count
+26	Which features generate the most usage errors?	feature_name, error_count
+27	Which features consume the most usage time?	feature_name, usage_duration_secs
+28	What percentage of usage comes from beta features?	is_beta_feature, usage_count
+29	Do churned customers demonstrate lower engagement?	Usage data, subscription lifecycle, churn events
+30	Which features are associated with higher customer retention?	Feature usage, account and churn data
+
+My recommendation: Don't focus exclusively on total feature usage.
+
+Analyze three dimensions:
+- Adoption: How many subscriptions use a feature?
+- Engagement: How frequently is it used?
+- Reliability: How many errors occur?
+These provide a much richer picture of product performance.
+E. Customer support performance
+Your support table contains more useful information than simply ticket volume.
+#	Business question	Required columns
+31	How does support ticket volume evolve?	submitted_at, ticket_id
+32	What is the average resolution time?	resolution_time_hours
+33	How quickly does support respond?	first_response_time_minutes
+34	What percentage of tickets are escalated?	escalation_flag
+35	How satisfied are customers with support?	satisfaction_score
+36	Which priority levels generate the most tickets?	priority
+37	Do churned customers have lower support satisfaction?	Satisfaction, account and churn data
+38	Does support activity increase before cancellation?	submitted_at, churn_date
+
+This gives you a proper customer support performance analysis, not just a ticket-count dashboard.
+F. Subscription lifecycle and customer value
+This is an additional analytical area I'd include.
+#	Business question	Required columns
+39	How frequently do customers upgrade their plans?	upgrade_flag, account_id
+40	How frequently do customers downgrade?	downgrade_flag, account_id
+41	Which plans have the highest upgrade activity?	plan_tier, upgrade_flag
+42	How does subscription tenure vary by plan?	start_date, end_date, plan_tier
+43	Which customers generate the highest recurring revenue?	account_id, mrr_amount
+44	How does subscription renewal behavior vary by plan?	auto_renew_flag, plan_tier
+
+G. Advanced investigation — Churn indicators
+This is where you can demonstrate stronger analytical thinking.
+#	Business question	Required columns
+45	Does declining feature usage precede churn?	usage_date, usage_count, churn_date
+46	Do customers with more usage errors churn more frequently?	error_count, churn data
+47	Does poor support satisfaction relate to churn?	satisfaction_score, churn data
+48	Do customers with more escalated tickets churn more frequently?	escalation_flag, churn data
+49	Does a downgrade precede customer churn?	preceding_downgrade_flag, churn_date
+50	Does a recent upgrade affect subsequent churn patterns?	preceding_upgrade_flag, churn_date
+
+These are investigative questions, not proof of causation. Analyze behavior before the churn event to avoid accidentally including information recorded after cancellation.
+
+4. My final recommended Power BI dashboard
+With these schemas, I would slightly expand the previous dashboard structure.
+Page 1 — Executive Overview
+
+
+
+
+
+
+
+
+excelverton.com.br
+
+
+- Active MRR and ARR
+- Active accounts
+- Active subscriptions
+- New accounts
+- Customer churn rate
+- Revenue lost
+- Revenue and customer growth trends
+
+
+Page 2 — Revenue & Subscription Analysis
+
+
+
+
+
+
+
+
+learn.microsoft.com
+
+
+- MRR and ARR trends
+- Revenue by plan
+- Revenue by billing frequency
+- Upgrade and downgrade trends
+- Auto-renewal adoption
+- Lost MRR
+
+
+Page 3 — Customer Acquisition & Segmentation
+
+
+
+
+
+
+
+
+zoomcharts.com
+
+
+- New account acquisition
+- Referral source performance
+- Customer distribution by industry
+- Customer distribution by country
+- Trial conversion, if measurable
+- Initial plan distribution
+
+
+Page 4 — Churn & Retention
+
+
+
+
+
+
+
+
+proanalytics.team
+
+
+- Customer churn rate
+- Churn by plan
+- Churn by industry and country
+- Churn reasons
+- Customer tenure
+- Cohort retention
+- Reactivation trends
+
+
+Page 5 — Product Engagement & Support
+
+
+
+
+
+
+
+
+dataflip.co
+
+
+- Feature adoption and usage
+- Usage trends
+- Feature error rates
+- Support ticket volume
+- Resolution time
+- First response time
+- Satisfaction scores
+- Support activity versus churn
+
+
+Five pages are reasonable for this dataset. I would not create separate pages for every individual analysis.
+5. Critical limitations and assumptions to investigate
+I want to highlight six things before you start writing more SQL. These can make or break the credibility of the project.
+Issue	Why it matters
+Multiple subscriptions per account	Subscription counts cannot be treated as customer counts.
+Multiple churn events per account	Reactivations can make event counts different from unique churned customers.
+churn_flag versus churn events	These fields may represent current status versus historical events.
+MRR and ARR	We need to establish whether these are current values, historical values, or subscription-level values.
+Upgrade/downgrade flags	Flags alone don't tell us exactly when revenue changed.
+Feature usage	Usage connects to accounts through subscription_id, so joining requires care.
+
+The most important limitation: Your subscription table has start_date, end_date, mrr_amount, and upgrade/downgrade flags, but no explicit upgrade or downgrade event dates.
+
+If each subscription row represents one subscription period, we can analyze subscription-level revenue and lifecycle. But we cannot automatically reconstruct the exact historical MRR movement caused by upgrades and downgrades.
+
+Similarly, trial conversion is potentially measurable, but we must first establish how trial and paid subscriptions are represented.
+6. Recommended project priorities
+I would not attempt all 50 questions. Here's my proposed selection.
+Final analytical scope
+Core analysis
+Must have
+
+1. Monthly customer acquisition
+2. Revenue by subscription plan
+3. MRR and ARR analysis
+4. Customer churn and churn rate
+5. Churn reasons
+6. Churn by industry and country
+7. Customer lifetime
+8. Cohort retention
+9. Feature adoption and engagement
+10. Support performance
+11. Referral source performance
+12. Subscription upgrades and downgrades
+
+Advanced analysis
+Portfolio differentiator
+
+13. Product engagement versus churn
+14. Support satisfaction versus churn
+15. Usage errors versus churn
+16. Support activity before cancellation
+17. Reactivation patterns
+18. Customer behavior before churn
+
+7. Your next step: Dataset validation
+Before continuing with Change Over Time, I recommend running these checks.
+
+Check 1 — Table sizes
+SELECT 'dim_accounts' AS table_name, COUNT(*) AS rows
+FROM analytics.dim_accounts
+
+UNION ALL
+
+SELECT 'dim_churn_events', COUNT(*)
+FROM analytics.dim_churn_events
+
+UNION ALL
+
+SELECT 'fact_subscriptions', COUNT(*)
+FROM analytics.fact_subscriptions
+
+UNION ALL
+
+SELECT 'fact_feature_usage', COUNT(*)
+FROM analytics.fact_feature_usage
+
+UNION ALL
+
+SELECT 'fact_support_tickets', COUNT(*)
+FROM analytics.fact_support_tickets;
+
+
+This will also help reconcile the README's row-volume information with the five tables in your database.
+
+Check 2 — Account and subscription relationships
+SELECT
+    COUNT(*) AS total_subscriptions,
+    COUNT(DISTINCT account_id) AS unique_accounts,
+    COUNT(*) - COUNT(DISTINCT subscription_id)
+        AS duplicate_subscription_ids
+FROM analytics.fact_subscriptions;
+
+
+Check 3 — Churn event behavior
+SELECT
+    is_reactivation,
+    COUNT(*) AS total_events,
+    COUNT(DISTINCT account_id) AS unique_accounts
+FROM analytics.dim_churn_events
+GROUP BY is_reactivation;
+
+
+Check 4 — Subscription lifecycle
+SELECT
+    churn_flag,
+    COUNT(*) AS subscriptions,
+    COUNT(*) FILTER (
+        WHERE end_date IS NULL
+    ) AS without_end_date
+FROM analytics.fact_subscriptions
+GROUP BY churn_flag;
+
+
+Check 5 — Revenue consistency
+SELECT
+    COUNT(*) AS total_subscriptions,
+    SUM(mrr_amount) AS total_mrr,
+    SUM(arr_amount) AS total_arr,
+    AVG(mrr_amount) AS avg_mrr,
+    AVG(arr_amount) AS avg_arr
+FROM analytics.fact_subscriptions;
+
+
+This is an initial consistency check, not yet a calculation of current company-wide MRR.
+
+My final recommendation
+Your RavenStack project has enough depth to demonstrate intermediate-to-advanced data analysis skills.
+
+I would use this positioning on your portfolio:
+
+Project title: RavenStack — End-to-End SaaS Business Performance & Churn Analytics
+
+Technology stack: PostgreSQL, SQL, Power BI, DAX.
+
+Business objective: Analyze SaaS revenue performance, customer acquisition, subscription lifecycle, customer churn, product engagement, and support operations to identify business trends and opportunities for improving customer retention.
+
+One important thing: don't rush into Power BI yet. Finish the analytical investigation, establish trustworthy metric definitions, and then build the reporting layer.
+
+Next, run the five validation queries and share their outputs. We can use the actual results to finalize the analytical scope instead of designing the project around assumptions.
