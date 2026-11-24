@@ -51,9 +51,9 @@ FROM
     analytics.fact_subscriptions
 UNION ALL
 -- *****************************
--- Total Annule Recurring Revenue ARR
+-- Total Annul Recurring Revenue ARR
 SELECT
-    'Total Annule Recurring Revenue ARR',
+    'Total Annul Recurring Revenue ARR',
     ROUND(SUM(arr_amount))
 FROM
     analytics.fact_subscriptions

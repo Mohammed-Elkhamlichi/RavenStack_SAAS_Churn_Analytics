@@ -4,6 +4,7 @@ SELECT
 FROM
     INFORMATION_SCHEMA.TABLES;
 
+
 -- Explore  all Columns in the DataBase
 SELECT
     *

@@ -1,10 +1,10 @@
 -- Compare the Measure Values by Category
 -- Examples:
--- Total Annule Recurring Revenue ARR By Subscription Plan
+-- Total Annul Recurring Revenue ARR By Subscription Plan
 -- Total Seats by Subscription Plan
 -- Total ARR by Accounts ...
 -- ******************************************
--- Total Annule Recurring Revenue by Plan
+-- Total Annul Recurring Revenue by Plan
 -- ******************************************
 SELECT
     plan_tier,
@@ -48,7 +48,7 @@ FROM
 
 -- Find Total Accounts
 -- Total Seats
--- Total Annule Recurring Revenue ARR
+-- Total Annul Recurring Revenue ARR
 -- By Countries
 SELECT
     a.country,
@@ -66,7 +66,7 @@ ORDER BY
 
 -- Find Total Accounts
 -- Total Seats
--- Total Annule Recurring Revenue ARR
+-- Total Annul Recurring Revenue ARR
 -- By Industry
 SELECT
     a.industry,
@@ -84,7 +84,7 @@ ORDER BY
 
 -- Find Total Accounts
 -- Total Usage
--- Total Annule Recurring Revenue ARR
+-- Total Annul Recurring Revenue ARR
 -- By Feature Name
 WITH
     base_query AS (

@@ -1,7 +1,7 @@
 /*
 Ranking the Value of Dimensions by measures:
 Examples:
-=> Ranking Subscriptions plan by total Annule Recurring Revenue ARR or MRR
+=> Ranking Subscriptions plan by total Annul Recurring Revenue ARR or MRR
 => Ranking features by total usage ...
 Top N Performers and Bottom N Performers
  */
@@ -67,7 +67,7 @@ WHERE
 	features_rank <= 5;
 
 
--- the top 10 accounts with the highest Annule Recurring Revenue
+-- the top 10 accounts with the highest Annul Recurring Revenue
 WITH
 	base_query AS (
 		SELECT

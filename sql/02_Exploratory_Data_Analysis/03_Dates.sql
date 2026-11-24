@@ -1,6 +1,6 @@
--- identify the earliest and latest dates (boundarais)
+-- identify the earliest and latest dates (boundaries)
 -- ****************************************************
--- Subscriptions boundarais
+-- Subscriptions boundaries
 -- ****************************************************
 -- "2023-01-09", "2024-12-31"
 SELECT
@@ -11,7 +11,7 @@ FROM
 
 
 -- ****************************************************
--- Accounts boundarais
+-- Accounts boundaries
 -- ****************************************************
 -- "2023-01-02", "2024-12-31"
 SELECT
@@ -22,7 +22,7 @@ FROM
 
 
 -- ****************************************************
--- Churn Events boundarais
+-- Churn Events boundaries
 -- ****************************************************
 -- "2023-01-25", "2024-12-31"
 SELECT
