@@ -1,64 +1,61 @@
-# RavenStack SaaS: MRR Waterfall, Cohort Retention & Churn Risk Analytics link
+# RavenStack — SaaS Business Analytics
 
-> **Project Objective:** Diagnose Net Revenue Retention (NRR) leakage, analyze subscription lifecycle movements (New, Expansion, Contraction, Churn), and build an early-warning risk scorecard using PostgreSQL and Power BI.
+An end-to-end data analytics project exploring the business performance of a fictional SaaS company using **PostgreSQL and Power BI**. The project transforms raw business data into meaningful insights to support better decision-making across customer acquisition, subscriptions, revenue, churn, product engagement, and customer support.
+
+## Project Objectives
+
+The main objective is to analyze RavenStack's business performance, identify trends, uncover potential risks, and translate data into actionable business recommendations.
+
+Key areas of analysis include:
+
+- **Subscription Performance:** Analyze subscription growth, plan distribution, and billing patterns.
+- **Revenue Analysis:** Examine Monthly Recurring Revenue (MRR), Annual Recurring Revenue (ARR), and revenue trends.
+- **Customer Acquisition:** Evaluate customer growth, acquisition sources, and customer segments.
+- **Churn & Retention:** Investigate churn patterns, reasons, reactivations, and potential retention risks.
+- **Product Engagement:** Explore feature adoption, usage activity, and product errors.
+- **Customer Support:** Analyze ticket volume, response times, resolution performance, and satisfaction.
+
+## Tools & Technologies
+
+- **PostgreSQL** — Data exploration, cleaning, transformation, and analysis.
+- **SQL** — Joins, CTEs, aggregations, window functions, and analytical queries.
+- **Power BI** — Interactive dashboards, data visualization, and business reporting.
+- **Git & GitHub** — Version control and project documentation.
+
+## Dataset
+
+The project uses the **RavenStack: Synthetic SaaS Dataset**, created by River @ Rivalytics.
+
+The dataset contains interconnected business records covering:
+
+- Customer accounts
+- Subscriptions
+- Churn events
+- Feature usage
+- Customer support tickets
+
+The dataset is synthetic and intended for educational and analytical purposes.
+
+**Dataset source:** [Rivalytics](https://rivalytics.medium.com)
+
+## Analytical Approach
+
+The project follows an end-to-end analytical workflow:
+
+1. **Data Understanding:** Inspect the dataset, identify table relationships, and understand data structures.
+2. **Data Quality Assessment:** Investigate missing values, duplicates, inconsistencies, and relationship integrity.
+3. **Data Preparation:** Clean and transform data where necessary.
+4. **Exploratory Data Analysis:** Identify patterns, trends, and relationships across business metrics.
+5. **Advanced Analysis:** Apply SQL analytical techniques to investigate business performance.
+6. **Business Intelligence:** Build interactive Power BI dashboards to communicate findings.
+7. **Business Recommendations:** Translate analytical findings into practical recommendations.
+
+## Project Status
+
+<badge color="warning">In Progress</badge>
+
+Currently focused on developing and validating the SQL analysis in PostgreSQL. Power BI dashboards and final business recommendations will follow.
 
 ---
 
-## 🎯 1. Business Context & Problem Statement
-
-- **The Challenge:** RavenStack is scaling its B2B software platform but struggling with hidden revenue leakage. While new signups look strong, customer cancellations and plan downgrades are eating into profitability.
-- **The Goal:** Provide executive leadership with a clear view of Monthly Recurring Revenue (MRR) movement, customer survival curves, and behavioral red flags so the Customer Success team can intervene _before_ clients cancel.
-
----
-
-## 🗄️ 2. Data Architecture & Relational Grain
-
-The project relies on 5 core relational tables simulating a real production B2B SaaS environment:
-
-- **`accounts` (Grain: 1 row per company):** Firmographic details, industry segment, and signup dates.
-- **`subscriptions` (Grain: 1 row per plan change/billing cycle):** Plan tiers, start/end dates, and MRR values.
-- **`feature_usage` (Grain: 1 row per account per day):** Product telemetry tracking core feature engagement.
-- **`support_tickets` (Grain: 1 row per support request):** Ticket category, resolution time, and satisfaction (CSAT) scores.
-- **`churn_events` (Grain: 1 row per cancellation):** Exact cancellation dates, final refund status, and exit survey reasons.
-
----
-
-## 📊 3. Key SaaS Metrics & Definitions
-
-- **MRR (Monthly Recurring Revenue):** Normalized monthly value of active subscriptions.
-- **MRR Waterfall Components:**
-    - _New MRR:_ Revenue from brand-new accounts this month.
-    - _Expansion MRR:_ Revenue gained from existing accounts upgrading their plans.
-    - _Contraction MRR:_ Revenue lost from existing accounts downgrading their plans.
-    - _Churned MRR:_ Revenue lost from accounts completely canceling their subscriptions.
-- **Net Revenue Retention (NRR):** Percentage of recurring revenue retained from existing customers over time (including upgrades and churn).
-- **SaaS Quick Ratio:** $(\text{New} + \text{Expansion}) / (\text{Contraction} + \text{Churn})$ — measuring growth efficiency.
-- **Logo Churn vs. Revenue Churn:** Tracking both the percentage of companies leaving and the actual dollar value lost.
-
----
-
-## 🛠️ 4. Analytical Methodology (The 5 Stages)
-
-1. **Data Discovery & Grain Audit:** Inspecting trial periods, free accounts, and annual contract conversions.
-2. **Star Schema Modeling:** Structuring staging data into clean dimension tables (`dim_accounts`, `dim_date`) and fact tables (`fact_mrr_monthly`, `fact_usage_summary`).
-3. **Reconstructing the MRR Waterfall:** Comparing monthly account snapshots using SQL window functions to classify every dollar into its correct movement bucket.
-4. **Behavioral & Friction Analysis:** Investigating the 30-day pre-churn window to see how support ticket spikes and flatlining feature usage correlate with cancellations.
-5. **Executive BI Storytelling:** Translating the analytical findings into an interactive Power BI report.
-
----
-
-## 📈 5. Power BI Dashboard Blueprint
-
-- **Page 1: Executive MRR & Revenue Health**
-    - _KPI Cards:_ Total MRR, NRR %, SaaS Quick Ratio, Logo Churn %.
-    - _Visuals:_ Monthly MRR Waterfall column chart & Revenue breakdown by tier.
-- **Page 2: Customer Survival & Cohort Retention**
-    - _Visuals:_ Cohort retention heatmap tracking signup months across Month 1 to Month 12.
-- **Page 3: Early-Warning Churn Risk Scorecard**
-    - _Visuals:_ Scatter plot linking support ticket volume and feature engagement drop-offs to predicted cancellation risk.
-
----
-
-## 💡 6. Actionable Business Recommendations (To Be Completed)
-
-- _Placeholder for final insights once analysis is run (e.g., targeting Customer Success interventions when weekly feature clicks drop below X threshold)._
+_This is an independent portfolio project developed for learning and demonstrating practical data analytics skills._
