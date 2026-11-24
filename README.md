@@ -11,7 +11,7 @@ Key areas of analysis include:
 - **Subscription Performance:** Analyze subscription growth, plan distribution, and billing patterns.
 - **Revenue Analysis:** Examine Monthly Recurring Revenue (MRR), Annual Recurring Revenue (ARR), and revenue trends.
 - **Customer Acquisition:** Evaluate customer growth, acquisition sources, and customer segments.
-- **Churn & Retention:** Investigate churn patterns, reasons, reactivations, and potential retention risks.
+- **Churn & Retention:** Investigate churn patterns, reasons, reactivation, and potential retention risks.
 - **Product Engagement:** Explore feature adoption, usage activity, and product errors.
 - **Customer Support:** Analyze ticket volume, response times, resolution performance, and satisfaction.
 
@@ -36,7 +36,7 @@ The dataset contains interconnected business records covering:
 
 The dataset is synthetic and intended for educational and analytical purposes.
 
-**Dataset source:** [Rivalytics](https://rivalytics.medium.com)
+**Dataset source:** [KAGGLE.COM](https://www.kaggle.com/datasets/rivalytics/saas-subscription-and-churn-analytics-dataset/data)
 
 ## Analytical Approach
 
