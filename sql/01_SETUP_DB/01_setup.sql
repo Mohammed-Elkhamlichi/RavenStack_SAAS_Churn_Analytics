@@ -401,12 +401,28 @@ SELECT
     (months_series + INTERVAL '1 month - 1 day')::DATE AS month_end
 FROM
     GENERATE_SERIES(
-        (
-            SELECT
-                DATE_TRUNC('month', MIN(start_date))::DATE
-            FROM
-                analytics.fact_subscriptions
+        -- Get the First Month in our Dataset
+        LEAST(
+            (
+                SELECT
+                    DATE_TRUNC('month', MIN(start_date))::DATE
+                FROM
+                    analytics.fact_subscriptions
+            ),
+            (
+                SELECT
+                    DATE_TRUNC('month', MIN(signup_date))::DATE
+                FROM
+                    analytics.dim_accounts
+            ),
+            (
+                SELECT
+                    DATE_TRUNC('month', MIN(usage_date))::DATE
+                FROM
+                    analytics.fact_feature_usage
+            )
         ),
+        -- Get The Last Month in our DataSet
         (
             SELECT
                 DATE_TRUNC('month', GREATEST(MAX(start_date), MAX(end_date)))::DATE
