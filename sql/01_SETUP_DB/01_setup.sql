@@ -228,6 +228,14 @@ CREATE TABLE
     );
 
 
+-- 4.5 Dimension: Date
+DROP TABLE IF EXISTS analytics.dim_dates CASCADE;
+
+
+CREATE TABLE
+    analytics.dim_dates (month_start DATE PRIMARY KEY, month_end DATE);
+
+
 -- =========================================================================
 -- STEP 5: TRANSFORM & LOAD DATA INTO ANALYTICS TABLES
 -- Casting TEXT columns from staging into clean data types (DATE, NUMERIC, BOOLEAN)
@@ -378,6 +386,35 @@ SELECT
     LOWER(TRIM(feedback_text))
 FROM
     staging.churn_events;
+
+
+/* 
+-- 5.6 Load dim_dates :
+-- using the generate series function to create a series of months,
+-- the first month is the minimum start_date in the fact_subscriptions table
+-- the last month is the maximum start_date or the end_date 
+ */
+INSERT INTO
+    analytics.dim_dates (month_start, month_end)
+SELECT
+    months_series::DATE AS month_start,
+    (months_series + INTERVAL '1 month - 1 day')::DATE AS month_end
+FROM
+    GENERATE_SERIES(
+        (
+            SELECT
+                DATE_TRUNC('month', MIN(start_date))::DATE
+            FROM
+                analytics.fact_subscriptions
+        ),
+        (
+            SELECT
+                DATE_TRUNC('month', GREATEST(MAX(start_date), MAX(end_date)))::DATE
+            FROM
+                analytics.fact_subscriptions
+        ),
+        '1 month'
+    ) AS months_series;
 
 
 -- =========================================================================
