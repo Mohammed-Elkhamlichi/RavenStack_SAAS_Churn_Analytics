@@ -228,7 +228,7 @@ CREATE TABLE
     );
 
 
--- 4.5 Dimension: Date
+-- 4.6 Dimension: Date
 DROP TABLE IF EXISTS analytics.dim_dates CASCADE;
 
 
