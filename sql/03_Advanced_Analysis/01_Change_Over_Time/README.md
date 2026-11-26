@@ -2,9 +2,7 @@
 
 ## Objective
 
-```txt
-Analyze the month-over-month evolution of RavenStack's key SaaS business metrics to identify growth trends, performance fluctuations, and potential business risks. Evaluate subscription acquisition, recurring revenue performance (MRR and ARR), customer churn, product engagement, and customer support activity to understand how the business evolves over time, detect emerging patterns, and generate actionable insights that support data-driven business decisions.
-```
+_Analyze the month-over-month evolution of RavenStack's key SaaS business metrics to identify growth trends, performance fluctuations, and potential business risks. Evaluate subscription acquisition, recurring revenue performance (MRR and ARR), customer churn, product engagement, and customer support activity to understand how the business evolves over time, detect emerging patterns, and generate actionable insights that support data-driven business decisions._
 
 ## Business Questions
 
