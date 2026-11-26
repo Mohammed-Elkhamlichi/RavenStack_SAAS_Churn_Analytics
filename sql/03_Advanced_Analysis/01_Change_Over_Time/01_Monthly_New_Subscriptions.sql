@@ -1,32 +1,28 @@
 /*
-===============================================================================
+-- ===============================================================================
 Analysis: Monthly New Subscriptions
-===============================================================================
+-- ===============================================================================
 
 Business Question:
-How many new subscriptions does RavenStack acquire each month,
-and how does the trend change over time?
+How many new subscriptions does RavenStack acquire each month?
 
 Objective:
-Analyze monthly subscription acquisition to identify growth
-patterns and fluctuations.
+Analyze monthly subscription acquisition trends.
 
-Database:
-PostgreSQL
+Data Sources:
+- analytics.fact_subscriptions
+- analytics.dim_dates
 
-Table:
-analytics.fact_subscriptions
+Metrics:
+- New Subscriptions
 
-Key Columns:
-- subscription_id
-- start_date
-
-SQL Concepts:
-- DATE_TRUNC()
-- COUNT(DISTINCT)
-- GROUP BY
-- ORDER BY
+-- ===============================================================================
  */
+-- 1. Data investigation
+-- 2. Main analysis
+-- 3. Additional analysis
+-- 4. Final results
+* /
 -- ===============================================================================
 -- The Query:
 -- ===============================================================================
