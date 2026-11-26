@@ -8,7 +8,7 @@ _Analyze the month-over-month evolution of RavenStack's key SaaS business metric
 
 ### 1. Monthly New Subscriptions & Starting MRR
 
-- **Question:** How many new subscriptions and accounts does RavenStack acquire each month, and how does starting MRR grow month-over-month?\*\*
+- **Question:** How many new subscriptions and accounts does RavenStack acquire each month, and how does starting MRR grow month-over-month?
 
 - **SQL File:** 01_Monthly_New_Subscriptions.sql
 
@@ -16,7 +16,7 @@ _Analyze the month-over-month evolution of RavenStack's key SaaS business metric
 
 ### 2. Monthly Active Run-Rate (MRR & ARR)
 
-- **Question** How many active accounts and how much active recurring revenue are running in each calendar month?
+- **Question:** How many active accounts and how much active recurring revenue are running in each calendar month?
 
 - **SQL File:** 02_Monthly_Active_MRR_RunRate.sql
 
