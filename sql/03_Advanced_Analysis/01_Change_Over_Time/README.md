@@ -9,7 +9,7 @@ _Analyze the month-over-month evolution of RavenStack's key SaaS business metric
 ### 1. Monthly Subscription Acquisition
 
 - **Business Question:** How many new subscriptions and accounts does RavenStack acquire each month, how much new MRR do they generate, and how does acquisition evolve over time?
-- **SQL File:** `01_Monthly_Subscription_Acquisition.sql`
+- **SQL File:** [`01_Monthly_Subscription_Acquisition.sql`]('./01_Monthly_Subscription_Acquisition.sql')
 - **Key Metrics:**
     - New Subscriptions
     - New Accounts
