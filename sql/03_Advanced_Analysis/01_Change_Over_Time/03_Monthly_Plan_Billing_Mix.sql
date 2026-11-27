@@ -37,6 +37,9 @@ SELECT
     plan_tier,
     billing_frequency,
     new_subscriptions,
+    subscribing_accounts,
+    new_mrr,
+    new_arr,
     ROUND(
         100.0 * new_subscriptions / NULLIF(
             SUM(new_subscriptions) OVER (
@@ -57,10 +60,7 @@ SELECT
             0
         ),
         2
-    ) AS billing_frequency_mix_pct,
-    subscribing_accounts,
-    new_mrr,
-    new_arr
+    ) AS billing_frequency_mix_pct
 FROM
     monthly_plan_billing_metrics
 ORDER BY
