@@ -9,7 +9,7 @@ _Analyze the month-over-month evolution of RavenStack's key SaaS business metric
 ### 1. Monthly Subscription Acquisition
 
 - **Business Question:** How many new subscriptions and accounts does RavenStack acquire each month, how much new MRR do they generate, and how does acquisition evolve over time?
-- **SQL File:** [01_Monthly_Subscription_Acquisition.sql](./01_Monthly_Subscription_acquisition.sql)
+- **SQL File:** [Monthly Subscription Acquisition](./01_Monthly_Subscription_acquisition.sql)
 
 - **Key Metrics:**
     - New Subscriptions
@@ -21,7 +21,7 @@ _Analyze the month-over-month evolution of RavenStack's key SaaS business metric
 ### 2. Monthly Active Recurring Revenue
 
 - **Business Question:** How do active accounts, Monthly Recurring Revenue (MRR), and Annual Recurring Revenue (ARR) evolve month over month?
-- **SQL File:** `02_Monthly_Active_MRR_ARR.sql`
+- **SQL File:** [Monthly Active MRR & ARR](./02_Monthly_Active_MRR_ARR.sql)
 - **Key Metrics:**
     - Active Accounts
     - Active Subscriptions
@@ -32,7 +32,7 @@ _Analyze the month-over-month evolution of RavenStack's key SaaS business metric
 ### 3. Subscription Plan & Billing Mix
 
 - **Business Question:** How does the distribution of new subscriptions and recurring revenue change across subscription plans (Basic, Pro, Enterprise) and billing frequencies (Monthly vs. Annual)?
-- **SQL File:** `03_Monthly_Plan_Billing_Mix.sql`
+- **SQL File:** [Subscription Plan & Billing Mix](03_Monthly_Plan_Billing_Mix.sql)
 - **Key Metrics:**
     - New Subscriptions by Plan
     - New MRR by Plan
