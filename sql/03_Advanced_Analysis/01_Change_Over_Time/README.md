@@ -32,7 +32,7 @@ _Analyze the month-over-month evolution of RavenStack's key SaaS business metric
 ### 3. Subscription Plan & Billing Mix
 
 - **Business Question:** How does the distribution of new subscriptions and recurring revenue change across subscription plans (Basic, Pro, Enterprise) and billing frequencies (Monthly vs. Annual)?
-- **SQL File:** [Subscription Plan & Billing Mix](03_Monthly_Plan_Billing_Mix.sql)
+- **SQL File:** [Subscription Plan & Billing Mix](./03_Monthly_Plan_Billing_Mix.sql)
 - **Key Metrics:**
     - New Subscriptions by Plan
     - New MRR by Plan
