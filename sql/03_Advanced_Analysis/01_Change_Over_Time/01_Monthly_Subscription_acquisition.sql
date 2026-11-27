@@ -33,7 +33,7 @@ WITH
             with the fact_subscription table (subscriptions info)
              */
             LEFT JOIN analytics.fact_subscriptions s ON s.start_date >= d.month_start
-            AND s.start_date < d.month_end + INTERVAL '1 day'
+            AND s.start_date <= d.month_end
         GROUP BY
             d.month_start
     ),
@@ -51,7 +51,7 @@ WITH
     monthly_growth AS (
         SELECT
             *,
-            -- the New Subscription Month Over Month Growth Value
+            -- the New Subscriptions Month Over Month Growth Value
             new_subscriptions - previous_month_subscriptions AS subscriptions_growth,
             -- The New Subscriptions Month Over Month Growth Percentage
             ROUND(
